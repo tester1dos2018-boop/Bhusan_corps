@@ -1,10 +1,15 @@
-export function Toast({ message }: { message: string | null }) {
-  if (!message) {
-    return null;
-  }
+import { useEffect, useState } from 'react';
 
+export function Toast({ message }: { message: string | null }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 3500);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!visible || !message) return null;
   return (
-    <div className="fixed bottom-6 right-6 z-50 rounded-[14px] border border-accent/20 bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft">
+    <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-primary/95 px-4 py-3 text-white shadow-lg">
       {message}
     </div>
   );

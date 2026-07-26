@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAppState } from '../context/AppContext';
 import { useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   Bar,
   BarChart,
@@ -111,6 +112,15 @@ function MiniSection({ title, children }: { title: string; children: React.React
 
 export default function Dashboard() {
   const { navigateWithContext, setCurrentAIContext, businessState } = useAppState();
+  const { currentUser } = useAuth();
+
+  const role = currentUser?.role;
+  const isFounder = role === 'Founder';
+  const isOps = role === 'Operations Manager';
+  const isSales = role === 'Sales Manager';
+  const isService = role === 'Service Manager';
+  const isEngineer = role === 'Field Engineer';
+  const isAdmin = role === 'System Administrator';
 
   const dashboardKpis = useMemo(() => {
     const pendingQuotations = businessState.quotations.filter((quotation) => quotation.status === 'Pending').length;
@@ -168,6 +178,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <div className="animate-fade-in-up">
+        {role && (
+          <div className="rounded-[12px] border border-border/80 bg-background/70 p-3 text-sm text-primary/70">Welcome back, <strong className="text-primary">{currentUser?.name}</strong> — {role === 'Founder' ? 'Executive summary' : role === 'Operations Manager' ? 'Operational KPIs' : role === 'Sales Manager' ? 'Pipeline KPIs' : role === 'Service Manager' ? 'SLA KPIs' : role === 'Field Engineer' ? "Today's assignments" : role === 'System Administrator' ? 'System health' : ''}.</div>
+        )}
+      </div>
       <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-white via-white to-accent/5 p-8 shadow-soft">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
@@ -218,39 +233,44 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
-        <MiniSection title="Industrial Revenue Breakdown">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueBreakdown} margin={{ left: -8, right: 8, top: 10 }}>
-                <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Bar dataKey="Machine Sales" stackId="a" fill="#14213D" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="AMC" stackId="a" fill="#C58A2A" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Spare Parts" stackId="a" fill="#7C8DA8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Service Revenue" stackId="a" fill="#16A34A" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </MiniSection>
+        {(isFounder || isSales) && (
+          <MiniSection title="Industrial Revenue Breakdown">
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueBreakdown} margin={{ left: -8, right: 8, top: 10 }}>
+                  <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Bar dataKey="Machine Sales" stackId="a" fill="#14213D" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="AMC" stackId="a" fill="#C58A2A" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Spare Parts" stackId="a" fill="#7C8DA8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Service Revenue" stackId="a" fill="#16A34A" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </MiniSection>
+        )}
 
-        <MiniSection title="Executive AI Insights">
-          <div className="space-y-3">
-            {insights.map((item) => (
-              <div key={item} className="rounded-[14px] border border-border/80 bg-background/70 p-4">
-                <div className="flex items-start gap-2">
-                  <Bot className="mt-0.5 h-4 w-4 text-accent" />
-                  <p className="text-sm leading-6 text-primary/70">{item}</p>
+        {isFounder && (
+          <MiniSection title="Executive AI Insights">
+            <div className="space-y-3">
+              {insights.map((item) => (
+                <div key={item} className="rounded-[14px] border border-border/80 bg-background/70 p-4">
+                  <div className="flex items-start gap-2">
+                    <Bot className="mt-0.5 h-4 w-4 text-accent" />
+                    <p className="text-sm leading-6 text-primary/70">{item}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </MiniSection>
+              ))}
+            </div>
+          </MiniSection>
+        )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <MiniSection title="Sales Pipeline">
+        {(isFounder || isSales) && (
+          <MiniSection title="Sales Pipeline">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={pipelineStages} margin={{ left: -8, right: 8 }}>
@@ -262,9 +282,11 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </MiniSection>
+          </MiniSection>
+        )}
 
-        <MiniSection title="Installation Progress">
+        {(isFounder || isOps || isService || isEngineer) && (
+          <MiniSection title="Installation Progress">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={installationProgress} margin={{ left: -8, right: 8 }}>
@@ -276,9 +298,11 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </MiniSection>
+          </MiniSection>
+        )}
 
-        <MiniSection title="Engineer Workload">
+        {(isFounder || isOps || isService || isEngineer) && (
+          <MiniSection title="Engineer Workload">
           <div className="space-y-4">
             {engineerWorkload.map((engineer) => (
               <div key={engineer.name} className="rounded-[14px] border border-border/80 bg-background/70 p-4">
@@ -296,9 +320,10 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-        </MiniSection>
+          </MiniSection>
+        )}
       </div>
-
+      <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <MiniSection title="Recent Activity">
           <div className="space-y-4">
@@ -317,8 +342,9 @@ export default function Dashboard() {
           </div>
         </MiniSection>
 
-        <div className="space-y-6">
-          <MiniSection title="Upcoming Installations">
+        {(isFounder || isOps || isService || isEngineer) && (
+          <div className="space-y-6">
+            <MiniSection title="Upcoming Installations">
             <div className="space-y-3">
               {upcomingInstallations.map((job) => (
                 <div key={job.customer} className="rounded-[14px] border border-border/80 bg-background/70 p-4">
@@ -336,9 +362,9 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-          </MiniSection>
+            </MiniSection>
 
-          <MiniSection title="Critical Alerts">
+            <MiniSection title="Critical Alerts">
             <div className="space-y-3">
               {criticalAlerts.map((alert) => (
                 <div key={alert} className="flex items-start gap-2 rounded-[14px] border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
@@ -348,6 +374,17 @@ export default function Dashboard() {
               ))}
             </div>
           </MiniSection>
+          </div>
+        )}
+
+        {(isFounder || isAdmin) && (
+          <MiniSection title="System Health">
+            <div className="space-y-3 text-sm text-primary/70">
+              <div className="rounded-[12px] border border-border/80 bg-background/70 p-3">CPU: 32% · Memory: 61% · Disk: 44%</div>
+              <div className="rounded-[12px] border border-border/80 bg-background/70 p-3">Uptime: 12 days · Last backup: 2 days ago</div>
+            </div>
+          </MiniSection>
+        )}
         </div>
       </div>
     </div>

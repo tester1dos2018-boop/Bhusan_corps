@@ -1,6 +1,8 @@
 import { ChevronRight, LogOut, X } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { navigationItems, type NavigationItem } from '../../config/navigation';
+import { ROLE_NAV_MAP } from '../../config/navigationConfig';
+import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 
 interface SidebarProps {
@@ -42,8 +44,38 @@ const SidebarItem = ({ item, isCollapsed, onNavigate }: SidebarItemProps) => {
   );
 };
 
+const LogoutButton = ({ isCollapsed, onCloseMobile }: { isCollapsed: boolean; onCloseMobile?: () => void }) => {
+  const navigate = useNavigate();
+  const auth = useAuth();
+
+  const handleLogout = () => {
+    auth.logout();
+    if (onCloseMobile) onCloseMobile();
+    navigate('/login');
+  };
+
+  return (
+    <button
+      className={cn(
+        'mt-3 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-danger transition-all duration-200 hover:bg-danger/5',
+        isCollapsed && 'justify-center px-0'
+      )}
+      onClick={handleLogout}
+    >
+      <LogOut className="h-5 w-5" />
+      {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+    </button>
+  );
+};
+
 export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }: SidebarProps) => {
-  const sidebarContent = (isMobile = false) => (
+  const auth = useAuth();
+
+  const sidebarContent = (isMobile = false) => {
+    const role = auth.currentUser?.role;
+    const allowedIds = role ? (ROLE_NAV_MAP[role as keyof typeof ROLE_NAV_MAP] ?? navigationItems.map((i) => i.path.replace('/', ''))) : navigationItems.map((i) => i.path.replace('/', ''));
+
+    return (
     <>
       <div className={cn('flex items-start gap-3', isCollapsed && !isMobile ? 'justify-center' : 'justify-between')}>
         <div className={cn('rounded-[16px] border border-border/80 bg-primary px-5 py-5 text-white shadow-soft dark:border-white/10', isCollapsed && !isMobile && 'px-3')}>
@@ -65,9 +97,11 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }: SidebarPro
       <nav className="mt-6 flex-1 space-y-1 overflow-y-auto pr-1">
         {(!isCollapsed || isMobile) && <div className="section-title mb-2 mt-4 px-2">Workspace</div>}
         <div className="space-y-1">
-          {navigationItems.map((item) => (
-            <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed && !isMobile} onNavigate={isMobile ? onCloseMobile : undefined} />
-          ))}
+          {navigationItems
+            .filter((item) => allowedIds.includes(item.path.replace('/', '')))
+            .map((item) => (
+              <SidebarItem key={item.path} item={item} isCollapsed={isCollapsed && !isMobile} onNavigate={isMobile ? onCloseMobile : undefined} />
+            ))}
         </div>
       </nav>
 
@@ -85,17 +119,10 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }: SidebarPro
         </div>
       </div>
 
-      <button
-        className={cn(
-          'mt-3 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-danger transition-all duration-200 hover:bg-danger/5',
-          isCollapsed && !isMobile && 'justify-center px-0'
-        )}
-      >
-        <LogOut className="h-5 w-5" />
-        {(!isCollapsed || isMobile) && <span className="text-sm font-medium">Logout</span>}
-      </button>
+      <LogoutButton isCollapsed={isCollapsed && !isMobile} onCloseMobile={isMobile ? onCloseMobile : undefined} />
     </>
   );
+  };
 
   return (
     <>

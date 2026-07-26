@@ -1,6 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { GlobalLayout } from './components/layout/GlobalLayout';
 import { navigationItems } from './config/navigation';
+import Login from './pages/Login';
+import AccessDenied from './pages/AccessDenied';
+import { ROLE_NAV_MAP } from './config/navigationConfig';
+import { useAuth } from './context/AuthContext';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import ExecutiveAssistant from './pages/ExecutiveAssistant';
@@ -16,20 +20,34 @@ import ServicePlaceholder from './pages/ServicePlaceholder';
 import './index.css';
 
 function App() {
+  const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+    const auth = useAuth();
+    if (!auth.isAuthenticated) return <Navigate to="/login" replace />;
+    return <>{children}</>;
+  };
+  const RequireRole = ({ id, children }: { id: string; children: React.ReactNode }) => {
+    const auth = useAuth();
+    const role = auth.currentUser?.role;
+    const allowed = role ? (ROLE_NAV_MAP[role as keyof typeof ROLE_NAV_MAP] ?? []) : [];
+    if (!role) return <Navigate to="/login" replace />;
+    if (!allowed.includes(id)) return <AccessDenied reason={`Your role (${role}) cannot access this module.`} />;
+    return <>{children}</>;
+  };
   return (
     <Routes>
-      <Route path="/" element={<GlobalLayout />}>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<RequireAuth><GlobalLayout /></RequireAuth>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="sales" element={<SalesPlaceholder />} />
-        <Route path="service" element={<ServicePlaceholder />} />
-        <Route path="executive-assistant" element={<ExecutiveAssistant />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="installations" element={<Installations />} />
-        <Route path="workforce" element={<Workforce />} />
-        <Route path="documents" element={<Documentation />} />
-        <Route path="settings" element={<SystemSettings />} />
+        <Route path="customers" element={<RequireRole id="customers"><Customers /></RequireRole>} />
+        <Route path="sales" element={<RequireRole id="sales"><SalesPlaceholder /></RequireRole>} />
+        <Route path="service" element={<RequireRole id="service"><ServicePlaceholder /></RequireRole>} />
+        <Route path="executive-assistant" element={<RequireRole id="executive-assistant"><ExecutiveAssistant /></RequireRole>} />
+        <Route path="inventory" element={<RequireRole id="inventory"><Inventory /></RequireRole>} />
+        <Route path="installations" element={<RequireRole id="installations"><Installations /></RequireRole>} />
+        <Route path="workforce" element={<RequireRole id="workforce"><Workforce /></RequireRole>} />
+        <Route path="documents" element={<RequireRole id="documents"><Documentation /></RequireRole>} />
+        <Route path="settings" element={<RequireRole id="settings"><SystemSettings /></RequireRole>} />
         <Route path="reports" element={<Reports />} />
         {navigationItems
           .filter((item) => !['/dashboard', '/customers', '/sales', '/service', '/executive-assistant'].includes(item.path))

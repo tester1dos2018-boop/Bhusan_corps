@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, HelpCircle, Menu, Moon, PanelLeftClose, PanelLeftOpen, Search, Settings, Sun, User } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu, Moon, PanelLeftClose, PanelLeftOpen, Search, Sun } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { getNavigationItemByPath } from '../../config/navigation';
 import { cn } from '../../lib/utils';
-import { Avatar, AvatarFallback, NotificationButton, SearchBar } from '../ui';
+import { Avatar, AvatarFallback, NotificationButton, SearchBar, Button } from '../ui';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '../../config/roles';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   isSidebarCollapsed: boolean;
@@ -16,6 +19,8 @@ export const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSideba
   const activeItem = useMemo(() => getNavigationItemByPath(location.pathname), [location.pathname]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { currentUser, logout, loginAsRole } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
@@ -75,31 +80,32 @@ export const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSideba
               aria-label="Open profile menu"
             >
               <Avatar size="sm">
-                <AvatarFallback className="bg-accent/10 text-accent">PK</AvatarFallback>
+                <AvatarFallback className="bg-accent/10 text-accent">{(currentUser?.name ?? 'PK').split(' ').map(n => n[0]).slice(0,2).join('')}</AvatarFallback>
               </Avatar>
-              <span className="hidden text-sm font-semibold text-primary dark:text-white sm:inline">BhusanCorps</span>
+              <span className="hidden text-sm font-semibold text-primary dark:text-white sm:inline">{currentUser?.name ?? 'BhushanCorps'}</span>
               <ChevronDown className={cn('hidden h-4 w-4 text-primary/45 transition-transform dark:text-white/45 sm:inline', isProfileOpen && 'rotate-180')} />
             </button>
 
             {isProfileOpen && (
               <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-[16px] border border-border bg-white p-2 shadow-soft dark:border-white/10 dark:bg-primary">
                 <div className="border-b border-border/80 px-3 py-3 dark:border-white/10">
-                  <p className="text-sm font-semibold text-primary dark:text-white">Bhusan Corps</p>
-                  <p className="text-xs text-primary/45 dark:text-white/45">Executive administrator</p>
+                  <p className="text-sm font-semibold text-primary dark:text-white">{currentUser?.name ?? 'Bhushan Corps'}</p>
+                  <p className="text-xs text-primary/45 dark:text-white/45">{currentUser?.role ?? 'Executive administrator'}</p>
                 </div>
-                {[
-                  { label: 'Profile', icon: User },
-                  { label: 'Workspace settings', icon: Settings },
-                  { label: 'Help center', icon: HelpCircle },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button key={item.label} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-primary/70 hover:bg-primary/5 hover:text-primary dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white">
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </button>
-                  );
-                })}
+                <div className="p-2">
+                  <Button size="sm" variant="ghost" onClick={() => alert('Open profile (demo)')} className="w-full">Profile</Button>
+                  <div className="mt-2">
+                    <p className="text-xs text-primary/60 px-2">Switch role</p>
+                    <div className="mt-2 space-y-2">
+                      {Object.keys(ROLES).map((r) => (
+                        <Button key={r} size="sm" variant="outline" onClick={() => { loginAsRole(r as any); setIsProfileOpen(false); navigate('/'); }} className="w-full text-left">{r}</Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Button size="sm" variant="secondary" onClick={() => { logout(); navigate('/login'); }} className="w-full">Logout</Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
