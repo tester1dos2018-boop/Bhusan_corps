@@ -12,6 +12,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
   { id: 'sales', label: 'Sales', path: '/sales' },
   { id: 'customers', label: 'Customers', path: '/customers' },
   { id: 'service', label: 'Service', path: '/service' },
+  { id: 'workforce', label: 'Workforce', path: '/workforce' },
   { id: 'inventory', label: 'Inventory', path: '/inventory' },
   { id: 'installations', label: 'Installations', path: '/installations' },
   { id: 'documents', label: 'Documentation', path: '/documents' },

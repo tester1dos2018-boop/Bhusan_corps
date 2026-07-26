@@ -28,7 +28,7 @@ export const ROLES: Record<RoleKey, RoleConfig> = {
   },
   'Operations Manager': {
     key: 'Operations Manager',
-    allowedModules: ['dashboard', 'service', 'installations', 'inventory', 'documents'],
+    allowedModules: ['dashboard', 'service', 'installations', 'inventory', 'documents', 'workforce'],
     dashboardWidgets: ['ops_overview', 'engineer_status'],
     aiPermissions: ['ops:view'],
     systemPermissions: [],
