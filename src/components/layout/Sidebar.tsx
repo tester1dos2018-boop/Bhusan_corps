@@ -108,12 +108,12 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, onCloseMobile }: SidebarPro
       <div className={cn('mt-4 rounded-[16px] border border-border bg-background/70 p-4 dark:border-white/10 dark:bg-white/5', isCollapsed && !isMobile && 'p-2')}>
         <div className={cn('flex items-center gap-3', isCollapsed && !isMobile && 'justify-center')}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary dark:bg-white/10 dark:text-white">
-            PK
+            {(auth.currentUser?.name ?? 'PK').split(' ').map(n => n[0]).slice(0,2).join('')}
           </div>
           {(!isCollapsed || isMobile) && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-primary dark:text-white">BhusanCorps</p>
-              <p className="truncate text-xs text-primary/45 dark:text-white/45">Executive admin</p>
+              <p className="truncate text-sm font-semibold text-primary dark:text-white">{auth.currentUser?.name ?? 'BhushanCorps'}</p>
+              <p className="truncate text-xs text-primary/45 dark:text-white/45">{auth.currentUser?.role ?? 'Executive admin'}</p>
             </div>
           )}
         </div>

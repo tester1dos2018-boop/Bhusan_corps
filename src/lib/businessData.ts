@@ -68,6 +68,7 @@ export const createInitialBusinessState = (): BusinessState => ({
     { id: 'SC-108', customerId: 'CUS-1001', customerName: 'ABC Cement', engineer: 'Rajesh', status: 'Scheduled', scheduledAt: '26 Jul', ticket: 'SR-108', sla: '4 hrs' },
     { id: 'SC-109', customerId: 'CUS-1004', customerName: 'Tata Steel', engineer: 'Asha', status: 'Assigned', scheduledAt: '28 Jul', ticket: 'SR-109', sla: '6 hrs' },
     { id: 'SC-110', customerId: 'CUS-1005', customerName: 'Indian Oil', engineer: 'Naveen', status: 'Completed', scheduledAt: '24 Jul', ticket: 'SR-110', sla: '2 hrs' },
+      { id: 'SC-111', customerId: 'CUS-1006', customerName: 'Bihar Food Corp', engineer: 'Vikram Patel', status: 'Assigned', scheduledAt: '28 Jul', ticket: 'SR-111', sla: '3 hrs' },
   ],
   amcs: [
     { id: 'AMC-301', customerId: 'CUS-1002', customerName: 'Meridian Industries', status: 'Renewal Due', renewalDue: 'Today', amount: '₹6.4L' },

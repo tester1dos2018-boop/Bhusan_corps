@@ -16,7 +16,8 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useAppState } from '../context/AppContext';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { generateAIResponse, type AIResponse } from '../lib/aiService';
 import { useAuth } from '../context/AuthContext';
 import {
   Bar,
@@ -121,6 +122,9 @@ export default function Dashboard() {
   const isService = role === 'Service Manager';
   const isEngineer = role === 'Field Engineer';
   const isAdmin = role === 'System Administrator';
+  const [report, setReport] = useState<AIResponse | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const canGenerateExecutiveReport = isFounder || isOps || isSales;
 
   const dashboardKpis = useMemo(() => {
     const pendingQuotations = businessState.quotations.filter((quotation) => quotation.status === 'Pending').length;
@@ -134,12 +138,26 @@ export default function Dashboard() {
   }, [businessState]);
 
   const handleExecutiveReport = () => {
-    setCurrentAIContext('Prepare an executive board brief with customer, revenue and service signals.');
-    navigateWithContext('/executive-assistant', {
-      module: 'executive-assistant',
-      action: 'Generate executive report',
-      toast: 'Preparing Executive Report...',
-    });
+    // generate inline AI brief on dashboard for authorized roles
+    (async () => {
+      setCurrentAIContext('Prepare an executive board brief with customer, revenue and service signals.');
+      setReportLoading(true);
+      try {
+        const resp = await generateAIResponse('Generate a concise executive board brief with top revenue signals, service risks and next 24 hours actions.', {
+          selectedCustomer: null,
+          selectedModule: 'dashboard',
+          selectedAction: 'Generate executive report',
+          selectedQuotation: null,
+          selectedServiceCall: null,
+          currentAIContext: 'Dashboard executive brief',
+          businessSnapshot: 'dashboard_overview',
+          businessState,
+        });
+        setReport(resp);
+      } finally {
+        setReportLoading(false);
+      }
+    })();
   };
 
   const handleCreateQuotation = () => {
@@ -200,12 +218,33 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" className="gap-2" onClick={handleExecutiveReport}><Sparkles className="h-4 w-4" /> Generate Executive Report</Button>
+            {canGenerateExecutiveReport ? (
+              <Button variant="secondary" className="gap-2" onClick={handleExecutiveReport} disabled={reportLoading}><Sparkles className="h-4 w-4" /> {reportLoading ? 'Generating…' : 'Generate Executive Report'}</Button>
+            ) : null}
             <Button variant="outline" className="gap-2" onClick={handleCreateQuotation}><Plus className="h-4 w-4" /> Create Quotation</Button>
             <Button variant="ghost" className="gap-2" onClick={handleViewServiceSchedule}><ClipboardList className="h-4 w-4" /> View Service Schedule</Button>
           </div>
         </div>
       </Card>
+
+      {canGenerateExecutiveReport && (
+        <Card className="p-6">
+          <h3 className="font-semibold text-primary">AI Executive Brief</h3>
+          <div className="mt-3">
+            {reportLoading ? (
+              <p className="text-sm text-primary/60">Generating executive brief…</p>
+            ) : report ? (
+              <>
+                <p className="text-sm text-primary/70">{report.summary}</p>
+                <div className="mt-3 font-semibold">Recommendation</div>
+                <p className="text-sm text-primary/70">{report.recommendation}</p>
+              </>
+            ) : (
+              <p className="text-sm text-primary/60">No executive brief generated yet. Use the button above to generate a board-ready summary inline.</p>
+            )}
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {kpiData.map(({ title, value, trend, description, icon: Icon }) => {

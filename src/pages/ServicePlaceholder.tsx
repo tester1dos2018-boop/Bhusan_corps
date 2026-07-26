@@ -89,7 +89,7 @@ export default function ServicePlaceholder() {
               <p className="text-sm font-semibold text-primary">Engineer Assignment</p>
               <div className="mt-4 rounded-[12px] border border-border/80 bg-white p-4">
                 <p className="text-sm text-primary/65">Recommended engineer for the active visit</p>
-                <p className="mt-2 font-serif text-xl font-semibold text-primary">Rajesh</p>
+                <p className="mt-2 font-serif text-xl font-semibold text-primary">Vikram</p>
                 <p className="mt-2 text-sm text-primary/55">Assigned to the latest service request and flagged for dispatch.</p>
               </div>
             </div>

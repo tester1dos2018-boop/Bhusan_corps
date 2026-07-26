@@ -20,7 +20,7 @@ export interface RoleConfig {
 export const ROLES: Record<RoleKey, RoleConfig> = {
   Founder: {
     key: 'Founder',
-    allowedModules: ['dashboard', 'customers', 'executive-assistant', 'documents', 'settings'],
+    allowedModules: ['dashboard', 'customers', 'executive-assistant', 'documents', 'settings','board-snapshot'],
     dashboardWidgets: ['executive_summary', 'revenue_trend'],
     aiPermissions: ['all'],
     systemPermissions: ['admin:settings', 'admin:users'],
@@ -44,7 +44,7 @@ export const ROLES: Record<RoleKey, RoleConfig> = {
   },
   'Service Manager': {
     key: 'Service Manager',
-    allowedModules: ['service', 'installations', 'documents'],
+    allowedModules: ['dashboard','service', 'installations', 'documents'],
     dashboardWidgets: ['service_queue', 'sla_health'],
     aiPermissions: ['service:view'],
     systemPermissions: [],
@@ -52,7 +52,8 @@ export const ROLES: Record<RoleKey, RoleConfig> = {
   },
   'Field Engineer': {
     key: 'Field Engineer',
-    allowedModules: ['service', 'documents'],
+    // ensure field engineers also see the dashboard
+    allowedModules: ['dashboard', 'service', 'documents'],
     dashboardWidgets: ['assigned_jobs'],
     aiPermissions: ['field:work'],
     systemPermissions: [],

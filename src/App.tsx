@@ -6,6 +6,7 @@ import AccessDenied from './pages/AccessDenied';
 import { ROLE_NAV_MAP } from './config/navigationConfig';
 import { useAuth } from './context/AuthContext';
 import Customers from './pages/Customers';
+import BoardSnapshot from './pages/BoardSnapshot';
 import Dashboard from './pages/Dashboard';
 import ExecutiveAssistant from './pages/ExecutiveAssistant';
 import Inventory from './pages/Inventory';
@@ -17,6 +18,7 @@ import ModulePage from './pages/ModulePage';
 import Reports from './pages/Reports';
 import SalesPlaceholder from './pages/SalesPlaceholder';
 import ServicePlaceholder from './pages/ServicePlaceholder';
+import MyDay from './pages/MyDay';
 import './index.css';
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
       <Route path="/" element={<RequireAuth><GlobalLayout /></RequireAuth>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="my-day" element={<RequireRole id="my-day"><MyDay /></RequireRole>} />
+        <Route path="board-snapshot" element={<RequireRole id="board-snapshot"><BoardSnapshot /></RequireRole>} />
         <Route path="customers" element={<RequireRole id="customers"><Customers /></RequireRole>} />
         <Route path="sales" element={<RequireRole id="sales"><SalesPlaceholder /></RequireRole>} />
         <Route path="service" element={<RequireRole id="service"><ServicePlaceholder /></RequireRole>} />
