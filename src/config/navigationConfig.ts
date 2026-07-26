@@ -21,7 +21,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
 
 export const ROLE_NAV_MAP: Record<RoleKey, string[]> = {
   Founder: NAV_ITEMS.map((n) => n.id),
-  'Operations Manager': ['dashboard', 'service', 'installations', 'inventory', 'documents'],
+  'Operations Manager': ['dashboard', 'service', 'installations', 'inventory', 'documents','workforce'],
   'Sales Manager': ['dashboard', 'sales', 'customers', 'documents'],
   'Service Manager': ['service', 'installations', 'documents'],
   'Field Engineer': ['service', 'documents'],
