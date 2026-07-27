@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL_NAME = "gemini-3.6-flash";
+// Use the lighter model with higher free-tier quota for demo usage
+const MODEL_NAME = "gemini-3.1-flash-lite";
 
 interface GeminiResponse {
   summary: string;
@@ -15,14 +16,14 @@ export async function generateGeminiResponse(
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("VITE_GEMINI_API_KEY is missing.");
+    throw new Error('VITE_GEMINI_API_KEY is missing.');
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  // The SDK currently expects the apiKey as a string.
+  const genAI = new GoogleGenerativeAI(apiKey as string);
 
-  const model = genAI.getGenerativeModel({
-    model: MODEL_NAME,
-  });
+  // getGenerativeModel returns a model handle
+  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
   const prompt = `
 You are Aravya AIOS, an Executive Business Copilot built for Bhushancorp.
@@ -82,25 +83,23 @@ Do not include Markdown.
 Do not include headings other than Summary and Recommendation.
 `;
 
-  const result = await model.generateContent(prompt);
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
 
-  const response = await result.response;
+    const summaryMatch = text.match(/Summary:\s*([\s\S]*?)Recommendation:/i);
+    const recommendationMatch = text.match(/Recommendation:\s*([\s\S]*)/i);
 
-  const text = response.text().trim();
-
-  const summaryMatch = text.match(
-    /Summary:\s*([\s\S]*?)Recommendation:/i
-  );
-
-  const recommendationMatch = text.match(
-    /Recommendation:\s*([\s\S]*)/i
-  );
-
-  return {
-    summary: summaryMatch?.[1]?.trim() || text,
-    recommendation:
-      recommendationMatch?.[1]?.trim() ||
-      "No recommendation generated.",
-    source: "gemini",
-  };
+    return {
+      summary: summaryMatch?.[1]?.trim() || text,
+      recommendation: recommendationMatch?.[1]?.trim() || 'No recommendation generated.',
+      source: 'gemini',
+    };
+  } catch (err) {
+    // bubble up a detailed error for aiService to attach and log
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Gemini provider error:', message);
+    throw new Error(`Gemini provider failed: ${message}`);
+  }
 }

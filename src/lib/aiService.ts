@@ -18,6 +18,7 @@ export interface AIResponse {
   summary: string;
   recommendation: string;
   source: 'gemini' | 'demo';
+  errorMessage?: string;
 }
 
 export const buildAIContext = (payload: AIContextPayload) => {
@@ -132,7 +133,10 @@ export const generateAIResponse = async (prompt: string, payload: AIContextPaylo
     const geminiResponse = await generateGeminiResponse(prompt, context);
     return geminiResponse;
   } catch (error) {
-  console.error("Gemini Error:", error);
-  return generateDemoAIResponse(prompt, payload);
+    console.error("Gemini Error:", error);
+    const demo = generateDemoAIResponse(prompt, payload);
+    // attach error message for UI debugging/visibility
+    (demo as AIResponse).errorMessage = error instanceof Error ? error.message : String(error);
+    return demo as AIResponse;
 }
 };
